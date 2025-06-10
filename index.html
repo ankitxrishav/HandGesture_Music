@@ -85,6 +85,44 @@
             transform: translateY(-2px);
         }
         
+        .bg-music-btn {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .bg-music-btn:hover {
+            background: #F57C00;
+            transform: translateY(-2px);
+        }
+        
+        .bg-music-btn.active {
+            background: #4CAF50;
+        }
+        
+        .instrument-selector, .background-music-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instrument-selector label, .background-music-control label {
+            font-weight: bold;
+            color: white;
+        }
+        
+        select {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.9);
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        select:focus {
+            outline: 2px solid #4CAF50;
+        }
+        
         .main-content {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -278,6 +316,28 @@
             <button id="startBtn" class="start-btn">Start Camera</button>
             <button id="stopBtn" class="stop-btn" style="display: none;">Stop</button>
             <button id="saveBtn" class="save-btn">Save MIDI</button>
+            
+            <div class="instrument-selector">
+                <label for="instrumentSelect">Instrument:</label>
+                <select id="instrumentSelect">
+                    <option value="piano">Piano</option>
+                    <option value="guitar">Guitar</option>
+                    <option value="violin">Violin</option>
+                    <option value="flute">Flute</option>
+                    <option value="synth">Synthesizer</option>
+                    <option value="organ">Organ</option>
+                </select>
+            </div>
+            
+            <div class="background-music-control">
+                <button id="bgMusicBtn" class="bg-music-btn">🎵 Background Music</button>
+                <select id="bgMusicSelect" style="display: none;">
+                    <option value="ambient">Ambient Calm</option>
+                    <option value="nature">Nature Sounds</option>
+                    <option value="classical">Classical Piano</option>
+                    <option value="meditation">Meditation</option>
+                </select>
+            </div>
         </div>
         
         <div class="main-content">
@@ -301,6 +361,8 @@
                     <p id="statusText">Ready</p>
                     <p>Active Notes: <span id="activeNotes">0</span></p>
                     <p>Hands Detected: <span id="handsDetected">0</span></p>
+                    <p>Instrument: <span id="currentInstrument">Piano</span></p>
+                    <p>Background: <span id="bgStatus">Off</span></p>
                 </div>
                 
                 <div class="log-area" id="logArea">

@@ -11,6 +11,12 @@ class MotionMusicApp {
         this.masterGain = null;
         this.activeOscillators = new Map();
         this.volume = 0.5;
+        this.currentInstrument = 'piano';
+        
+        // Background music
+        this.backgroundAudio = null;
+        this.backgroundPlaying = false;
+        this.backgroundVolume = 0.3;
         
         // MIDI data
         this.midiData = [];
@@ -31,6 +37,11 @@ class MotionMusicApp {
         this.activeNotesSpan = document.getElementById('activeNotes');
         this.handsDetectedSpan = document.getElementById('handsDetected');
         this.logArea = document.getElementById('logArea');
+        this.instrumentSelect = document.getElementById('instrumentSelect');
+        this.bgMusicBtn = document.getElementById('bgMusicBtn');
+        this.bgMusicSelect = document.getElementById('bgMusicSelect');
+        this.currentInstrumentSpan = document.getElementById('currentInstrument');
+        this.bgStatusSpan = document.getElementById('bgStatus');
         
         this.init();
     }
@@ -45,6 +56,9 @@ class MotionMusicApp {
         this.stopBtn.addEventListener('click', () => this.stopCamera());
         this.saveBtn.addEventListener('click', () => this.saveMIDI());
         this.volumeSlider.addEventListener('input', (e) => this.updateVolume(e.target.value));
+        this.instrumentSelect.addEventListener('change', (e) => this.changeInstrument(e.target.value));
+        this.bgMusicBtn.addEventListener('click', () => this.toggleBackgroundMusic());
+        this.bgMusicSelect.addEventListener('change', (e) => this.changeBackgroundMusic(e.target.value));
         
         // Initialize audio context
         this.initAudio();
@@ -397,31 +411,31 @@ class MotionMusicApp {
         // Calculate frequency from MIDI note
         const frequency = 440 * Math.pow(2, (midiNote - 69) / 12);
         
-        // Create oscillator
+        // Create oscillator with instrument-specific settings
         const oscillator = this.audioContext.createOscillator();
         const gainNode = this.audioContext.createGain();
         
-        oscillator.connect(gainNode);
-        gainNode.connect(this.masterGain);
+        // Add instrument-specific effects
+        const instrumentChain = this.createInstrumentChain(oscillator, gainNode);
+        instrumentChain.connect(this.masterGain);
         
         oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
-        oscillator.type = 'sine';
+        this.setInstrumentWaveform(oscillator);
         
-        // Set volume with envelope
+        // Set volume with instrument-specific envelope
         const now = this.audioContext.currentTime;
-        gainNode.gain.setValueAtTime(0, now);
-        gainNode.gain.linearRampToValueAtTime(velocity * 0.3, now + 0.1);
+        this.applyInstrumentEnvelope(gainNode, velocity, now);
         
         oscillator.start();
         
         // Store for later cleanup
-        this.activeOscillators.set(midiNote, { oscillator, gainNode });
+        this.activeOscillators.set(midiNote, { oscillator, gainNode, chain: instrumentChain });
         this.activeNotes.add(midiNote);
         
         // Add to MIDI data
         this.addMidiEvent('note_on', midiNote, Math.floor(velocity * 127));
         
-        this.log(`Playing note ${midiNote} (${frequency.toFixed(1)} Hz)`);
+        this.log(`Playing ${this.currentInstrument} note ${midiNote} (${frequency.toFixed(1)} Hz)`);
     }
     
     stopNote(midiNote) {
@@ -429,7 +443,7 @@ class MotionMusicApp {
             return;
         }
         
-        const { oscillator, gainNode } = this.activeOscillators.get(midiNote);
+        const { oscillator, gainNode, chain } = this.activeOscillators.get(midiNote);
         
         // Fade out
         const now = this.audioContext.currentTime;
@@ -467,6 +481,334 @@ class MotionMusicApp {
             velocity,
             timestamp
         });
+    }
+    
+    createInstrumentChain(oscillator, gainNode) {
+        oscillator.connect(gainNode);
+        
+        // Add instrument-specific effects
+        switch (this.currentInstrument) {
+            case 'guitar':
+                // Add slight distortion and reverb for guitar
+                const guitarFilter = this.audioContext.createBiquadFilter();
+                guitarFilter.type = 'lowpass';
+                guitarFilter.frequency.value = 3000;
+                gainNode.connect(guitarFilter);
+                return guitarFilter;
+                
+            case 'violin':
+                // Add vibrato effect for violin
+                const violinLFO = this.audioContext.createOscillator();
+                const violinGain = this.audioContext.createGain();
+                violinLFO.frequency.value = 6; // 6 Hz vibrato
+                violinGain.gain.value = 10;
+                violinLFO.connect(violinGain);
+                violinGain.connect(oscillator.frequency);
+                violinLFO.start();
+                gainNode.connect(gainNode);
+                return gainNode;
+                
+            case 'flute':
+                // Add high-pass filter for flute-like sound
+                const fluteFilter = this.audioContext.createBiquadFilter();
+                fluteFilter.type = 'highpass';
+                fluteFilter.frequency.value = 800;
+                gainNode.connect(fluteFilter);
+                return fluteFilter;
+                
+            case 'organ':
+                // Add slight chorus effect for organ
+                const organDelay = this.audioContext.createDelay();
+                const organFeedback = this.audioContext.createGain();
+                organDelay.delayTime.value = 0.02;
+                organFeedback.gain.value = 0.3;
+                gainNode.connect(organDelay);
+                organDelay.connect(organFeedback);
+                organFeedback.connect(gainNode);
+                return gainNode;
+                
+            case 'synth':
+                // Add low-pass filter with envelope for synth
+                const synthFilter = this.audioContext.createBiquadFilter();
+                synthFilter.type = 'lowpass';
+                synthFilter.frequency.value = 2000;
+                synthFilter.Q.value = 10;
+                gainNode.connect(synthFilter);
+                return synthFilter;
+                
+            default: // piano
+                return gainNode;
+        }
+    }
+    
+    setInstrumentWaveform(oscillator) {
+        switch (this.currentInstrument) {
+            case 'guitar':
+                oscillator.type = 'sawtooth';
+                break;
+            case 'violin':
+                oscillator.type = 'sawtooth';
+                break;
+            case 'flute':
+                oscillator.type = 'sine';
+                break;
+            case 'organ':
+                oscillator.type = 'square';
+                break;
+            case 'synth':
+                oscillator.type = 'sawtooth';
+                break;
+            default: // piano
+                oscillator.type = 'triangle';
+                break;
+        }
+    }
+    
+    applyInstrumentEnvelope(gainNode, velocity, startTime) {
+        const attack = this.getInstrumentAttack();
+        const decay = this.getInstrumentDecay();
+        const sustain = this.getInstrumentSustain();
+        
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(velocity * 0.4, startTime + attack);
+        gainNode.gain.linearRampToValueAtTime(velocity * sustain, startTime + attack + decay);
+    }
+    
+    getInstrumentAttack() {
+        switch (this.currentInstrument) {
+            case 'guitar': return 0.02;
+            case 'violin': return 0.3;
+            case 'flute': return 0.1;
+            case 'organ': return 0.0;
+            case 'synth': return 0.05;
+            default: return 0.1; // piano
+        }
+    }
+    
+    getInstrumentDecay() {
+        switch (this.currentInstrument) {
+            case 'guitar': return 0.5;
+            case 'violin': return 0.1;
+            case 'flute': return 0.2;
+            case 'organ': return 0.0;
+            case 'synth': return 0.3;
+            default: return 0.3; // piano
+        }
+    }
+    
+    getInstrumentSustain() {
+        switch (this.currentInstrument) {
+            case 'guitar': return 0.3;
+            case 'violin': return 0.8;
+            case 'flute': return 0.6;
+            case 'organ': return 0.9;
+            case 'synth': return 0.5;
+            default: return 0.6; // piano
+        }
+    }
+    
+    changeInstrument(instrument) {
+        this.currentInstrument = instrument;
+        this.currentInstrumentSpan.textContent = instrument.charAt(0).toUpperCase() + instrument.slice(1);
+        this.log(`Instrument changed to ${instrument}`);
+        
+        // Stop all current notes to apply new instrument sound
+        this.stopAllNotes();
+    }
+    
+    toggleBackgroundMusic() {
+        if (this.backgroundPlaying) {
+            this.stopBackgroundMusic();
+        } else {
+            this.startBackgroundMusic();
+        }
+    }
+    
+    startBackgroundMusic() {
+        if (!this.audioContext) {
+            this.initAudio();
+        }
+        
+        const selectedTrack = this.bgMusicSelect.value || 'ambient';
+        this.playBackgroundTrack(selectedTrack);
+        
+        this.backgroundPlaying = true;
+        this.bgMusicBtn.classList.add('active');
+        this.bgMusicBtn.textContent = '🔇 Stop Background';
+        this.bgMusicSelect.style.display = 'inline-block';
+        this.bgStatusSpan.textContent = selectedTrack.charAt(0).toUpperCase() + selectedTrack.slice(1);
+        
+        this.log(`Background music started: ${selectedTrack}`);
+    }
+    
+    stopBackgroundMusic() {
+        if (this.backgroundAudio) {
+            // Stop all background oscillators
+            if (this.backgroundAudio.oscillator1) this.backgroundAudio.oscillator1.stop();
+            if (this.backgroundAudio.oscillator2) this.backgroundAudio.oscillator2.stop();
+            if (this.backgroundAudio.lfo) this.backgroundAudio.lfo.stop();
+            if (this.backgroundAudio.whiteNoise) this.backgroundAudio.whiteNoise.stop();
+            if (this.backgroundAudio.oscillators) {
+                this.backgroundAudio.oscillators.forEach(osc => osc.stop());
+            }
+            this.backgroundAudio = null;
+        }
+        
+        this.backgroundPlaying = false;
+        this.bgMusicBtn.classList.remove('active');
+        this.bgMusicBtn.textContent = '🎵 Background Music';
+        this.bgMusicSelect.style.display = 'none';
+        this.bgStatusSpan.textContent = 'Off';
+        
+        this.log('Background music stopped');
+    }
+    
+    changeBackgroundMusic(track) {
+        if (this.backgroundPlaying) {
+            this.stopBackgroundMusic();
+            this.bgMusicSelect.value = track;
+            this.startBackgroundMusic();
+        }
+    }
+    
+    playBackgroundTrack(trackType) {
+        // Generate procedural background music using Web Audio API
+        const bgGain = this.audioContext.createGain();
+        bgGain.gain.value = this.backgroundVolume;
+        bgGain.connect(this.audioContext.destination);
+        
+        switch (trackType) {
+            case 'ambient':
+                this.createAmbientTrack(bgGain);
+                break;
+            case 'nature':
+                this.createNatureTrack(bgGain);
+                break;
+            case 'classical':
+                this.createClassicalTrack(bgGain);
+                break;
+            case 'meditation':
+                this.createMeditationTrack(bgGain);
+                break;
+        }
+    }
+    
+    createAmbientTrack(destination) {
+        // Create a soothing ambient pad
+        const oscillator1 = this.audioContext.createOscillator();
+        const oscillator2 = this.audioContext.createOscillator();
+        const gain1 = this.audioContext.createGain();
+        const gain2 = this.audioContext.createGain();
+        const filter = this.audioContext.createBiquadFilter();
+        
+        oscillator1.type = 'sine';
+        oscillator2.type = 'sine';
+        oscillator1.frequency.value = 220; // A3
+        oscillator2.frequency.value = 330; // E4
+        
+        filter.type = 'lowpass';
+        filter.frequency.value = 800;
+        filter.Q.value = 1;
+        
+        gain1.gain.value = 0.1;
+        gain2.gain.value = 0.08;
+        
+        oscillator1.connect(gain1);
+        oscillator2.connect(gain2);
+        gain1.connect(filter);
+        gain2.connect(filter);
+        filter.connect(destination);
+        
+        oscillator1.start();
+        oscillator2.start();
+        
+        // Add subtle frequency modulation
+        const lfo = this.audioContext.createOscillator();
+        const lfoGain = this.audioContext.createGain();
+        lfo.frequency.value = 0.1;
+        lfoGain.gain.value = 5;
+        lfo.connect(lfoGain);
+        lfoGain.connect(oscillator1.frequency);
+        lfo.start();
+        
+        this.backgroundAudio = { oscillator1, oscillator2, lfo };
+    }
+    
+    createNatureTrack(destination) {
+        // Create nature-like sounds with filtered noise
+        const bufferSize = this.audioContext.sampleRate * 2;
+        const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        
+        for (let i = 0; i < bufferSize; i++) {
+            output[i] = Math.random() * 2 - 1;
+        }
+        
+        const whiteNoise = this.audioContext.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+        whiteNoise.loop = true;
+        
+        const filter = this.audioContext.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 1000;
+        filter.Q.value = 0.5;
+        
+        const gain = this.audioContext.createGain();
+        gain.gain.value = 0.05;
+        
+        whiteNoise.connect(filter);
+        filter.connect(gain);
+        gain.connect(destination);
+        
+        whiteNoise.start();
+        this.backgroundAudio = { whiteNoise };
+    }
+    
+    createClassicalTrack(destination) {
+        // Create a simple classical-style progression
+        const notes = [440, 523.25, 659.25, 783.99]; // A, C, E, G
+        const oscillators = [];
+        
+        notes.forEach((freq, index) => {
+            const osc = this.audioContext.createOscillator();
+            const gain = this.audioContext.createGain();
+            
+            osc.type = 'triangle';
+            osc.frequency.value = freq / 2; // Lower octave
+            gain.gain.value = 0.03;
+            
+            osc.connect(gain);
+            gain.connect(destination);
+            osc.start(this.audioContext.currentTime + index * 0.5);
+            
+            oscillators.push(osc);
+        });
+        
+        this.backgroundAudio = { oscillators };
+    }
+    
+    createMeditationTrack(destination) {
+        // Create deep, resonant tones for meditation
+        const fundamentalFreq = 110; // A2
+        const oscillators = [];
+        
+        // Create harmonic series
+        for (let harmonic = 1; harmonic <= 4; harmonic++) {
+            const osc = this.audioContext.createOscillator();
+            const gain = this.audioContext.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.value = fundamentalFreq * harmonic;
+            gain.gain.value = 0.08 / harmonic; // Decreasing amplitude for higher harmonics
+            
+            osc.connect(gain);
+            gain.connect(destination);
+            osc.start();
+            
+            oscillators.push(osc);
+        }
+        
+        this.backgroundAudio = { oscillators };
     }
     
     updateVolume(value) {
