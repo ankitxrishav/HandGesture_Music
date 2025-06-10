@@ -1,0 +1,40 @@
+modules = ["python-3.11"]
+
+[nix]
+channel = "stable-24_05"
+packages = ["SDL2", "SDL2_image", "SDL2_mixer", "SDL2_ttf", "fontconfig", "freetype", "lcms2", "libGL", "libGLU", "libimagequant", "libjpeg", "libpng", "libtiff", "libwebp", "libxcrypt", "openjpeg", "pkg-config", "portmidi", "tcl", "tk", "zlib"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Motion Music App"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "motion_music_app"
+
+[[workflows.workflow]]
+name = "Motion Music App"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pip install opencv-python mediapipe mido pygame pillow numpy && python main.py"
+
+[[workflows.workflow]]
+name = "motion_music_app"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pip install opencv-python mediapipe mido pygame pillow numpy && python main.py"
+
+[deployment]
+run = ["sh", "-c", "pip install opencv-python mediapipe mido pygame pillow numpy && python main.py"]
