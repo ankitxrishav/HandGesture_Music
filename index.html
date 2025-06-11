@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Motion Music Creator</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
@@ -12,226 +14,404 @@
         }
         
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
             min-height: 100vh;
-            padding: 20px;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .background-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            z-index: -1;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 0;
         }
         
         h1 {
-            text-align: center;
+            font-size: 3.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.8;
+            font-weight: 300;
             margin-bottom: 30px;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
         .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .control-section {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 24px;
             display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .control-section h3 {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            opacity: 0.9;
         }
         
         button {
-            padding: 12px 24px;
-            font-size: 16px;
+            padding: 14px 28px;
+            font-size: 15px;
+            font-weight: 500;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        button:hover::before {
+            opacity: 1;
         }
         
         .start-btn {
-            background: #4CAF50;
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
             color: white;
+            box-shadow: 0 8px 32px rgba(86, 171, 47, 0.3);
         }
         
         .start-btn:hover {
-            background: #45a049;
             transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(86, 171, 47, 0.4);
         }
         
         .start-btn:disabled {
-            background: #cccccc;
+            background: rgba(255, 255, 255, 0.1);
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
         
         .stop-btn {
-            background: #f44336;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa8a8 100%);
             color: white;
+            box-shadow: 0 8px 32px rgba(255, 107, 107, 0.3);
         }
         
         .stop-btn:hover {
-            background: #da190b;
             transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(255, 107, 107, 0.4);
         }
         
         .save-btn {
-            background: #2196F3;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
         }
         
         .save-btn:hover {
-            background: #0b7dda;
             transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
         }
         
         .bg-music-btn {
-            background: #FF9800;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
+            box-shadow: 0 8px 32px rgba(240, 147, 251, 0.3);
         }
         
         .bg-music-btn:hover {
-            background: #F57C00;
             transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(240, 147, 251, 0.4);
         }
         
         .bg-music-btn.active {
-            background: #4CAF50;
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            box-shadow: 0 8px 32px rgba(86, 171, 47, 0.3);
         }
         
-        .instrument-selector, .background-music-control {
+        .form-group {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            flex-direction: column;
+            gap: 8px;
         }
         
-        .instrument-selector label, .background-music-control label {
-            font-weight: bold;
+        .form-group label {
+            font-weight: 500;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        select, .slider-container {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
             color: white;
-        }
-        
-        select {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 6px;
-            background: rgba(255,255,255,0.9);
             font-size: 14px;
+            font-family: inherit;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
         
         select:focus {
-            outline: 2px solid #4CAF50;
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        select option {
+            background: #2d3748;
+            color: white;
         }
         
         .main-content {
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
+            grid-template-columns: 1fr 400px;
+            gap: 32px;
+            margin-bottom: 40px;
         }
         
         .video-section {
-            background: rgba(255,255,255,0.1);
-            border-radius: 15px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .video-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
         }
         
         .status-section {
-            background: rgba(255,255,255,0.1);
-            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .status-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
             padding: 20px;
-            backdrop-filter: blur(10px);
         }
         
         #videoElement {
             width: 100%;
-            height: 400px;
-            background: #000;
-            border-radius: 10px;
+            height: 480px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
             object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
         
         #canvas {
             width: 100%;
-            height: 400px;
-            background: #000;
-            border-radius: 10px;
+            height: 480px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
             display: none;
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
         
-        .volume-control {
-            margin: 20px 0;
-        }
-        
-        .volume-control label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
+        .slider-container {
+            position: relative;
+            padding: 8px 0;
         }
         
         input[type="range"] {
             width: 100%;
-            height: 8px;
-            border-radius: 4px;
-            background: rgba(255,255,255,0.3);
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
             outline: none;
+            -webkit-appearance: none;
+            appearance: none;
         }
         
         input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
             appearance: none;
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #4CAF50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
         }
         
-        .status-info {
-            background: rgba(0,0,0,0.2);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .status-card h3 {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 16px;
+            opacity: 0.9;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .metric:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-label {
+            font-weight: 500;
+            opacity: 0.8;
+        }
+        
+        .metric-value {
+            font-weight: 600;
+            color: #a8e6cf;
         }
         
         .log-area {
-            background: rgba(0,0,0,0.3);
-            padding: 15px;
-            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
             height: 200px;
             overflow-y: auto;
-            font-family: monospace;
+            font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
             font-size: 12px;
-            line-height: 1.4;
+            line-height: 1.5;
+        }
+        
+        .log-area::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .log-area::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        
+        .log-area::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
         }
         
         .instructions {
-            background: rgba(255,255,255,0.1);
-            border-radius: 15px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 32px;
         }
         
         .instructions h3 {
-            margin-bottom: 15px;
-            color: #FFD700;
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
-        .instructions ul {
-            list-style-type: none;
-            padding-left: 0;
+        .instructions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
         }
         
-        .instructions li {
+        .instruction-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .instruction-card h4 {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #a8e6cf;
+        }
+        
+        .instruction-card ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .instruction-card li {
             margin-bottom: 8px;
-            padding-left: 20px;
+            padding-left: 24px;
             position: relative;
+            opacity: 0.9;
+            line-height: 1.4;
         }
         
-        .instructions li:before {
-            content: "🎵";
+        .instruction-card li:before {
+            content: "→";
             position: absolute;
             left: 0;
+            color: #667eea;
+            font-weight: bold;
         }
         
         .note-zones {
@@ -309,34 +489,76 @@
     </style>
 </head>
 <body>
+    <div class="background-pattern"></div>
     <div class="container">
-        <h1>🎵 Motion Music Creator</h1>
+        <div class="header">
+            <h1>Motion Music Creator</h1>
+            <p class="subtitle">Create beautiful melodies with hand movements powered by AI learning</p>
+        </div>
         
         <div class="controls">
-            <button id="startBtn" class="start-btn">Start Camera</button>
-            <button id="stopBtn" class="stop-btn" style="display: none;">Stop</button>
-            <button id="saveBtn" class="save-btn">Save MIDI</button>
-            
-            <div class="instrument-selector">
-                <label for="instrumentSelect">Instrument:</label>
-                <select id="instrumentSelect">
-                    <option value="piano">Piano</option>
-                    <option value="guitar">Guitar</option>
-                    <option value="violin">Violin</option>
-                    <option value="flute">Flute</option>
-                    <option value="synth">Synthesizer</option>
-                    <option value="organ">Organ</option>
-                </select>
+            <div class="control-section">
+                <h3>Camera & Recording</h3>
+                <button id="startBtn" class="start-btn">Start Camera</button>
+                <button id="stopBtn" class="stop-btn" style="display: none;">Stop Session</button>
+                <button id="saveBtn" class="save-btn">Export MIDI</button>
             </div>
             
-            <div class="background-music-control">
-                <button id="bgMusicBtn" class="bg-music-btn">🎵 Background Music</button>
-                <select id="bgMusicSelect" style="display: none;">
-                    <option value="ambient">Ambient Calm</option>
-                    <option value="nature">Nature Sounds</option>
-                    <option value="classical">Classical Piano</option>
-                    <option value="meditation">Meditation</option>
-                </select>
+            <div class="control-section">
+                <h3>Instrument Selection</h3>
+                <div class="form-group">
+                    <label for="instrumentSelect">Choose Instrument</label>
+                    <select id="instrumentSelect">
+                        <option value="piano">Grand Piano</option>
+                        <option value="guitar">Acoustic Guitar</option>
+                        <option value="violin">Concert Violin</option>
+                        <option value="flute">Silver Flute</option>
+                        <option value="synth">Analog Synthesizer</option>
+                        <option value="organ">Church Organ</option>
+                        <option value="harp">Celtic Harp</option>
+                        <option value="cello">Solo Cello</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>AI Music Engine</h3>
+                <div class="form-group">
+                    <label for="scaleSelect">Musical Scale</label>
+                    <select id="scaleSelect">
+                        <option value="pentatonic">Pentatonic (Beginner)</option>
+                        <option value="major">Major Scale</option>
+                        <option value="minor">Minor Scale</option>
+                        <option value="blues">Blues Scale</option>
+                        <option value="dorian">Dorian Mode</option>
+                        <option value="chromatic">Chromatic</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="harmonyMode">Harmony Mode</label>
+                    <select id="harmonyMode">
+                        <option value="none">Single Notes</option>
+                        <option value="chords">Auto Chords</option>
+                        <option value="arpeggios">Arpeggios</option>
+                        <option value="counterpoint">AI Counterpoint</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>Background Ambience</h3>
+                <button id="bgMusicBtn" class="bg-music-btn">Start Ambience</button>
+                <div class="form-group">
+                    <label for="bgMusicSelect">Ambient Track</label>
+                    <select id="bgMusicSelect">
+                        <option value="forest">Forest Whispers</option>
+                        <option value="ocean">Ocean Waves</option>
+                        <option value="rain">Gentle Rain</option>
+                        <option value="space">Cosmic Drift</option>
+                        <option value="classical">Classical Pad</option>
+                        <option value="meditation">Deep Meditation</option>
+                    </select>
+                </div>
             </div>
         </div>
         
@@ -349,40 +571,119 @@
                     <div id="handDots"></div>
                 </div>
                 
-                <div class="volume-control">
-                    <label for="volumeSlider">Volume: <span id="volumeValue">50%</span></label>
-                    <input type="range" id="volumeSlider" min="0" max="100" value="50">
+                <div class="form-group">
+                    <label for="volumeSlider">Master Volume: <span id="volumeValue">50%</span></label>
+                    <div class="slider-container">
+                        <input type="range" id="volumeSlider" min="0" max="100" value="50">
+                    </div>
                 </div>
             </div>
             
             <div class="status-section">
-                <div class="status-info">
-                    <h3>Status</h3>
-                    <p id="statusText">Ready</p>
-                    <p>Active Notes: <span id="activeNotes">0</span></p>
-                    <p>Hands Detected: <span id="handsDetected">0</span></p>
-                    <p>Instrument: <span id="currentInstrument">Piano</span></p>
-                    <p>Background: <span id="bgStatus">Off</span></p>
+                <div class="status-card">
+                    <h3>Session Status</h3>
+                    <div class="metric">
+                        <span class="metric-label">Status</span>
+                        <span class="metric-value" id="statusText">Ready</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Active Notes</span>
+                        <span class="metric-value" id="activeNotes">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Hands Detected</span>
+                        <span class="metric-value" id="handsDetected">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Instrument</span>
+                        <span class="metric-value" id="currentInstrument">Grand Piano</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Scale</span>
+                        <span class="metric-value" id="currentScale">Pentatonic</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Harmony</span>
+                        <span class="metric-value" id="currentHarmony">Single Notes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Ambience</span>
+                        <span class="metric-value" id="bgStatus">Off</span>
+                    </div>
                 </div>
                 
-                <div class="log-area" id="logArea">
-                    <div>🎵 Motion Music Creator Initialized</div>
-                    <div>📹 Click "Start Camera" to begin</div>
+                <div class="status-card">
+                    <h3>AI Learning Progress</h3>
+                    <div class="metric">
+                        <span class="metric-label">Patterns Learned</span>
+                        <span class="metric-value" id="patternsLearned">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Melody Confidence</span>
+                        <span class="metric-value" id="melodyConfidence">0%</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Harmony Score</span>
+                        <span class="metric-value" id="harmonyScore">0%</span>
+                    </div>
+                </div>
+                
+                <div class="status-card">
+                    <h3>Activity Log</h3>
+                    <div class="log-area" id="logArea">
+                        <div>Motion Music Creator Initialized</div>
+                        <div>AI Engine Ready - Select settings and start camera</div>
+                    </div>
                 </div>
             </div>
         </div>
         
         <div class="instructions">
-            <h3>How to Use</h3>
-            <ul>
-                <li>Allow camera access when prompted</li>
-                <li>Position your hand in front of the camera</li>
-                <li>Extended fingers trigger different musical notes</li>
-                <li>Move your hand around to play different notes</li>
-                <li>Make a fist to stop all notes</li>
-                <li>Open your hand wide to sustain notes</li>
-                <li>The screen is divided into musical zones - explore!</li>
-            </ul>
+            <h3>Interactive Music Creation Guide</h3>
+            <div class="instructions-grid">
+                <div class="instruction-card">
+                    <h4>Getting Started</h4>
+                    <ul>
+                        <li>Allow camera access when prompted</li>
+                        <li>Select your preferred instrument and scale</li>
+                        <li>Choose harmony mode for richer sounds</li>
+                        <li>Start ambient background for atmosphere</li>
+                    </ul>
+                </div>
+                
+                <div class="instruction-card">
+                    <h4>Hand Gestures</h4>
+                    <ul>
+                        <li>Extended fingers trigger notes</li>
+                        <li>Fist gesture stops all notes</li>
+                        <li>Open palm sustains current harmony</li>
+                        <li>Pointing finger plays single notes</li>
+                        <li>Peace sign activates chord mode</li>
+                    </ul>
+                </div>
+                
+                <div class="instruction-card">
+                    <h4>AI Learning Features</h4>
+                    <ul>
+                        <li>AI learns your playing patterns</li>
+                        <li>Suggests harmonic progressions</li>
+                        <li>Adapts to your musical style</li>
+                        <li>Creates complementary melodies</li>
+                        <li>Builds on your musical phrases</li>
+                    </ul>
+                </div>
+                
+                <div class="instruction-card">
+                    <h4>Musical Zones</h4>
+                    <ul>
+                        <li>Screen divided into note regions</li>
+                        <li>Higher regions = higher pitches</li>
+                        <li>Left-right movement changes notes</li>
+                        <li>Movement speed affects volume</li>
+                        <li>Hand size influences tone quality</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
