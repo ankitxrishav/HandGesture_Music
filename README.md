@@ -34,5 +34,8 @@ This is ideal for:
 ### ✅ Requirements
 
 ### - Python 3.9
+- install pygame
 - A working webcam  
-- internet 
+- internet
+
+### Run the Index.html file If you want to run locally !!
