@@ -1,12 +1,17 @@
 # 🎶 HandGesture_Music 🎶
 
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
-![Python](https://img.shields.io/badge/python-3.9-blue)
+## ![Python](https://img.shields.io/badge/python-3.9-blue)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 **HandGesture_Music** is an interactive, gesture-controlled music generation tool that turns your webcam into a musical instrument. It uses real-time hand tracking and MIDI output to create and control melodies, making music generation accessible to everyone — even if you're not a trained musician.
 
 ---
+
+### Screenshot 
+
+<img width="1220" alt="Screenshot 2025-06-22 at 6 48 22 PM" src="https://github.com/user-attachments/assets/8a1a1352-b638-446e-a4ae-48e9ed0c9cc1" />
+
 
 ## 🧠 About the Project
 
